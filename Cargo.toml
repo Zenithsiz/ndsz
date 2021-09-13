@@ -4,6 +4,7 @@ members = [
   "ndsz-nds",
   "ndsz-fat",
   "ndsz-narc",
+  "ndsz-generic-header",
   "ndsz-mknds",
   "ndsz-unnds",
   "ndsz-unnarc",
