@@ -20,6 +20,10 @@ pub enum FromReaderError {
 	#[error("Unable to slice reader to file size")]
 	SliceReader(#[source] io::Error),
 
+	/// Unable to seek to fat
+	#[error("Unable to seek to fat")]
+	SeekFat(#[source] io::Error),
+
 	/// Unable to read fat header
 	#[error("Unable to read fat header")]
 	ReadFatHeader(#[source] io::Error),

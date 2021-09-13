@@ -20,7 +20,7 @@ pub use header::Header;
 // Imports
 use byteorder::{LittleEndian, ReadBytesExt};
 use ndsz_fat::{FileAllocationTable, FileNameTable};
-use std::io::{self, Read, Seek};
+use std::io::{self, Read, Seek, SeekFrom};
 use zutil::{IoSlice, ReadByteArray};
 
 /// Narc file
@@ -50,7 +50,9 @@ impl<R> Narc<R> {
 
 		// Limit the reader to the file size
 		// Note: Technically not required, but will catch faulty narcs
+		// TODO: Avoid doing the 2 seeks here
 		let mut reader = IoSlice::new(reader, ..u64::from(header.file_size)).map_err(FromReaderError::SliceReader)?;
+		reader.seek(SeekFrom::Current(0x10)).map_err(FromReaderError::SeekFat)?;
 
 		// Read the fat
 		let fat = {
