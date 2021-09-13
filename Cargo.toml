@@ -2,9 +2,10 @@
 
 members = [
   "ndsz-nds",
+  "ndsz-fat",
+  "ndsz-narc",
   "ndsz-mknds",
   "ndsz-unnds",
-  "ndsz-fat",
 ]
 
 [patch."https://github.com/Zenithsiz/zutil"]
