@@ -32,8 +32,8 @@ fn main() -> Result<(), anyhow::Error> {
 
 	// Read the narc
 	let narc = match args.narcless {
-		true => Narc::narcless_from_reader(&rom_file).context("Unable to read narc")?,
-		false => Narc::from_reader(&rom_file).context("Unable to read narc")?,
+		true => Narc::narcless_from_reader(rom_file).context("Unable to read narc")?,
+		false => Narc::from_reader(rom_file).context("Unable to read narc")?,
 	};
 
 	// Create the output directory if it doesn't exist
@@ -41,13 +41,18 @@ fn main() -> Result<(), anyhow::Error> {
 		fs::create_dir_all(&args.output_path).context("Unable to create directory")?;
 	}
 	// Extract the filesystem
-	self::extract_fat_dir(&narc.fnt.root, &rom_file, &narc.fat, args.output_path).context("Unable to extract fat")?;
+	match args.extract_fat_on_empty_fnt && narc.fnt.root.entries.is_empty() {
+		true => self::extract_fat_entries::<IoSlice<fs::File>>(&narc.fat, &narc.data.0, args.output_path)
+			.context("Unable to extract entries of fat")?,
+		false => self::extract_fat_dir::<IoSlice<fs::File>>(&narc.fnt.root, &narc.data.0, &narc.fat, args.output_path)
+			.context("Unable to extract fat")?,
+	}
 
 	Ok(())
 }
 
 /// Directory visitor
-struct DirVisitor<'fat, 'reader> {
+struct DirVisitor<'fat, 'reader, R> {
 	/// Current path
 	cur_path: PathBuf,
 
@@ -55,15 +60,18 @@ struct DirVisitor<'fat, 'reader> {
 	// Note: Has to be immutable due to a GAT bug.
 	//       This also implies we can't use a BufReader.
 	// TODO: Make this `&'reader mut R` once the GAT bug is solved.
-	reader: &'reader fs::File,
+	reader: &'reader R,
 
 	/// The fat
 	fat: &'fat FileAllocationTable,
 }
 
-impl<'fat, 'reader> dir::Visitor for DirVisitor<'fat, 'reader> {
+impl<'fat, 'reader, R> dir::Visitor for DirVisitor<'fat, 'reader, R>
+where
+	&'reader R: io::Read + io::Seek,
+{
 	type Error = anyhow::Error;
-	type SubDirVisitor<'visitor, 'entry> = DirVisitor<'fat, 'reader>;
+	type SubDirVisitor<'visitor, 'entry> = DirVisitor<'fat, 'reader, R>;
 
 	fn visit_file(&mut self, name: &AsciiStrArr<0x80>, id: u16) -> Result<(), Self::Error> {
 		let path = self.cur_path.join(name.as_str());
@@ -102,13 +110,39 @@ impl<'fat, 'reader> dir::Visitor for DirVisitor<'fat, 'reader> {
 }
 
 /// Extracts all files from a fat directory
-fn extract_fat_dir(
-	dir: &Dir, reader: &fs::File, fat: &FileAllocationTable, path: PathBuf,
-) -> Result<(), anyhow::Error> {
+fn extract_fat_dir<'a, R>(
+	dir: &Dir, reader: &'a R, fat: &FileAllocationTable, path: PathBuf,
+) -> Result<(), anyhow::Error>
+where
+	&'a R: io::Read + io::Seek,
+{
 	let mut visitor = DirVisitor {
 		fat,
 		reader,
 		cur_path: path,
 	};
 	dir.walk(&mut visitor).context("Unable to extract root directory")
+}
+
+/// Extracts all entries from a fat
+fn extract_fat_entries<'a, R>(fat: &FileAllocationTable, reader: &'a R, path: PathBuf) -> Result<(), anyhow::Error>
+where
+	&'a R: io::Read + io::Seek,
+{
+	for (idx, rom_file_ptr) in fat.ptrs.iter().enumerate() {
+		let path = path.join(&format!("{idx}.bin"));
+		println!("{}", path.display());
+
+		// Get the file on the rom
+		let mut rom_file = IoSlice::new(
+			reader,
+			u64::from(rom_file_ptr.start_address)..u64::from(rom_file_ptr.end_address),
+		)
+		.context("Unable to read rom file")?;
+
+		let mut output_file = fs::File::create(&path).context("Unable to create output file")?;
+		io::copy(&mut rom_file, &mut output_file).context("Unable to write to output file")?;
+	}
+
+	Ok(())
 }
