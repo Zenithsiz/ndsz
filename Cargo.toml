@@ -1,0 +1,11 @@
+[workspace]
+
+members = [
+  "ndsz-nds",
+  "ndsz-mknds",
+  "ndsz-unnds",
+  "ndsz-fat",
+]
+
+[patch."https://github.com/Zenithsiz/zutil"]
+zutil = {path = "../zutil"}

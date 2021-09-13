@@ -1,0 +1,24 @@
+[package]
+edition = "2018"
+name = "ndsz-fat"
+version = "0.0.0"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+
+# Bytes
+byteorder = "1.4.3"
+
+# Util
+itertools = "0.10.1"
+zutil = {git = "https://github.com/Zenithsiz/zutil", rev = "2a029369ac5aa4e7dbd6f6afb78ae419ee18666f"}
+
+# Error handling
+thiserror = "1.0.28"
+
+# Logging
+log = "0.4.14"
+
+# Serde
+serde = {version = "1.0.130", features = ["derive"]}

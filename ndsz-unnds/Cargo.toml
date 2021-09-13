@@ -1,0 +1,28 @@
+[package]
+edition = "2018"
+name = "ndsz-unnds"
+version = "0.0.0"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+
+# Ndsz
+ndsz-fat = {path = "../ndsz-fat"}
+ndsz-nds = {path = "../ndsz-nds"}
+
+# Cmd
+clap = "2.33.3"
+
+# Util
+zutil = {git = "https://github.com/Zenithsiz/zutil", rev = "2a029369ac5aa4e7dbd6f6afb78ae419ee18666f"}
+
+# Error handling
+anyhow = "1.0.43"
+
+# Logging
+log = "0.4.14"
+simplelog = "0.10.0"
+
+# Serde
+serde_yaml = "0.8.20"
