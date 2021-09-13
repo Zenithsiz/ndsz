@@ -6,6 +6,7 @@ members = [
   "ndsz-narc",
   "ndsz-mknds",
   "ndsz-unnds",
+  "ndsz-unnarc",
 ]
 
 [patch."https://github.com/Zenithsiz/zutil"]
