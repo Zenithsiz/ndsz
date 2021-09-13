@@ -17,7 +17,7 @@ pub enum FromReaderError {
 }
 
 
-/// Error for [`MainTable::read_sub_table`](super::MainTable::read_sub_table)
+/// Error for [`MainTableEntry::read_sub_table`](super::MainTableEntry::read_sub_table)
 #[derive(Debug, thiserror::Error)]
 pub enum ReadSubTableError {
 	/// Unable to create sub-table slice
@@ -30,7 +30,7 @@ pub enum ReadSubTableError {
 }
 
 
-/// Error for [`MainTable::read_dir`](super::MainTable::read_dir)
+/// Error for [`MainTableEntry::read_dir`](super::MainTableEntry::read_dir)
 #[derive(Debug, thiserror::Error)]
 pub enum ReadDirError {
 	/// Unable to read sub-table
