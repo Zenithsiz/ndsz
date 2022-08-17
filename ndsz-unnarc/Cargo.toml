@@ -12,17 +12,17 @@ ndsz-fat = {path = "../ndsz-fat"}
 ndsz-narc = {path = "../ndsz-narc"}
 
 # Cmd
-clap = "2.33.3"
+clap = "3.2.17"
 
 # Util
 zutil = {git = "https://github.com/Zenithsiz/zutil", rev = "2a029369ac5aa4e7dbd6f6afb78ae419ee18666f"}
 
 # Error handling
-anyhow = "1.0.43"
+anyhow = "1.0.62"
 
 # Logging
-log = "0.4.14"
-simplelog = "0.10.0"
+log = "0.4.17"
+simplelog = "0.12.0"
 
 # Serde
-serde_yaml = "0.8.20"
+serde_yaml = "0.9.9"
