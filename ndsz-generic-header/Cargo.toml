@@ -17,7 +17,7 @@ zutil = {git = "https://github.com/Zenithsiz/zutil", rev = "2a029369ac5aa4e7dbd6
 thiserror = "1.0.32"
 
 # Logging
-log = "0.4.17"
+tracing = "0.1.36"
 
 # Serde
 serde = {version = "1.0.143", features = ["derive"]}

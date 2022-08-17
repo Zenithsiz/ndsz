@@ -15,18 +15,15 @@ use std::{
 	fs, io,
 	path::{Path, PathBuf},
 };
+use tracing_subscriber::prelude::*;
 use zutil::{AsciiStrArr, IoSlice, ReadByteArray};
 
 
 fn main() -> Result<(), anyhow::Error> {
 	// Initialize the logger
-	simplelog::TermLogger::init(
-		log::LevelFilter::Debug,
-		simplelog::Config::default(),
-		simplelog::TerminalMode::Stderr,
-		simplelog::ColorChoice::Auto,
-	)
-	.context("Unable to initialize logger")?;
+	tracing_subscriber::registry()
+		.with(tracing_subscriber::fmt::layer().with_filter(tracing_subscriber::EnvFilter::from_default_env()))
+		.init();
 
 	// Get the arguments
 	let args = Args::parse();
@@ -39,8 +36,7 @@ fn main() -> Result<(), anyhow::Error> {
 		let header_bytes = input_file.read_byte_array().context("Unable to read header")?;
 		ndsz_nds::Header::from_bytes(&header_bytes).context("Unable to parse header")?
 	};
-
-	log::info!("Found header {header:#?}");
+	tracing::trace!(?header);
 
 	// Get the fat
 	let fat = {

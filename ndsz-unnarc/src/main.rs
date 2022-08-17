@@ -13,18 +13,15 @@ use clap::Parser;
 use ndsz_fat::{dir, Dir, FileAllocationTable};
 use ndsz_narc::Narc;
 use std::{fs, io, path::PathBuf};
+use tracing_subscriber::prelude::*;
 use zutil::{AsciiStrArr, IoSlice};
 
 
 fn main() -> Result<(), anyhow::Error> {
 	// Initialize the logger
-	simplelog::TermLogger::init(
-		log::LevelFilter::Debug,
-		simplelog::Config::default(),
-		simplelog::TerminalMode::Stderr,
-		simplelog::ColorChoice::Auto,
-	)
-	.context("Unable to initialize logger")?;
+	tracing_subscriber::registry()
+		.with(tracing_subscriber::fmt::layer().with_filter(tracing_subscriber::EnvFilter::from_default_env()))
+		.init();
 
 	// Get the arguments
 	let args = Args::parse();
