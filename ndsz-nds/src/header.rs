@@ -7,9 +7,11 @@ mod error;
 pub use error::FromBytesError;
 
 // Imports
-use crate::UnitCode;
-use byteorder::{ByteOrder, LittleEndian};
-use zutil::{ascii_str_arr::AsciiChar, AsciiStrArr};
+use {
+	crate::UnitCode,
+	byteorder::{ByteOrder, LittleEndian},
+	zutil::{ascii_str_arr::AsciiChar, AsciiStrArr},
+};
 
 /// Header
 // From `http://dsibrew.org/wiki/DSi_cartridge_header`.

@@ -1,8 +1,7 @@
 //! Errors
 
 // Imports
-use crate::fnt::sub_table;
-use std::io;
+use {crate::fnt::sub_table, std::io};
 
 /// Error for [`MainTable::from_reader`](super::MainTable::from_reader)
 #[derive(Debug, thiserror::Error)]

@@ -18,7 +18,9 @@ pub trait Visitor {
 
 	/// Visits a directory and returns the visitor for the directory
 	fn visit_dir<'visitor, 'entry>(
-		&'visitor mut self, name: &'entry AsciiStrArr<0x80>, id: u16,
+		&'visitor mut self,
+		name: &'entry AsciiStrArr<0x80>,
+		id: u16,
 	) -> Result<Self::SubDirVisitor<'visitor, 'entry>, Self::Error>;
 }
 
@@ -34,7 +36,9 @@ impl<V: Visitor> Visitor for &mut V {
 	}
 
 	fn visit_dir<'visitor, 'entry>(
-		&'visitor mut self, name: &'entry AsciiStrArr<0x80>, id: u16,
+		&'visitor mut self,
+		name: &'entry AsciiStrArr<0x80>,
+		id: u16,
 	) -> Result<Self::SubDirVisitor<'visitor, 'entry>, Self::Error> {
 		(**self).visit_dir(name, id)
 	}

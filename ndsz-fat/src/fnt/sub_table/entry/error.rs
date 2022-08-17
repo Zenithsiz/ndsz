@@ -1,8 +1,7 @@
 //! Errors
 
 // Imports
-use std::io;
-use zutil::ascii_str_arr;
+use {std::io, zutil::ascii_str_arr};
 
 /// Error for [`SubTableEntry::from_reader`](super::SubTableEntry::from_reader)
 #[derive(Debug, thiserror::Error)]

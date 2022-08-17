@@ -4,12 +4,14 @@
 mod error;
 
 // Exports
-pub use error::FromReaderError;
+pub use self::error::FromReaderError;
 
 // Imports
-use crate::FilePtr;
-use itertools::Itertools;
-use std::{io, iter};
+use {
+	crate::FilePtr,
+	itertools::Itertools,
+	std::{io, iter},
+};
 
 /// File allocation table
 #[derive(PartialEq, Eq, Clone, Debug)]

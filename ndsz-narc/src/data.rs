@@ -7,9 +7,11 @@ mod error;
 pub use error::{FromReaderError, NarclessFromReaderError};
 
 // Imports
-use byteorder::{ByteOrder, LittleEndian};
-use std::io;
-use zutil::{IoSlice, ReadByteArray};
+use {
+	byteorder::{ByteOrder, LittleEndian},
+	std::io,
+	zutil::{IoSlice, ReadByteArray},
+};
 
 /// Narc data
 #[derive(Clone, Debug)]

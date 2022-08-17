@@ -10,7 +10,9 @@ pub mod file_ptr;
 pub mod fnt;
 
 // Exports
-pub use dir::{Dir, DirEntry, DirEntryKind};
-pub use fat::FileAllocationTable;
-pub use file_ptr::FilePtr;
-pub use fnt::FileNameTable;
+pub use self::{
+	dir::{Dir, DirEntry, DirEntryKind},
+	fat::FileAllocationTable,
+	file_ptr::FilePtr,
+	fnt::FileNameTable,
+};

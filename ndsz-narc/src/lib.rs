@@ -8,17 +8,21 @@ pub mod fnt_header;
 pub mod header;
 
 // Exports
-pub use data::Data;
-pub use error::{FromReaderError, NarclessFromReaderError};
-pub use fat_header::FatHeader;
-pub use fnt_header::FntHeader;
-pub use header::Header;
+pub use self::{
+	data::Data,
+	error::{FromReaderError, NarclessFromReaderError},
+	fat_header::FatHeader,
+	fnt_header::FntHeader,
+	header::Header,
+};
 
 // Imports
-use byteorder::{LittleEndian, ReadBytesExt};
-use ndsz_fat::{FileAllocationTable, FileNameTable};
-use std::io::{self, Read, Seek, SeekFrom};
-use zutil::{IoSlice, ReadByteArray};
+use {
+	byteorder::{LittleEndian, ReadBytesExt},
+	ndsz_fat::{FileAllocationTable, FileNameTable},
+	std::io::{self, Read, Seek, SeekFrom},
+	zutil::{IoSlice, ReadByteArray},
+};
 
 /// Narc file
 #[derive(Clone, Debug)]

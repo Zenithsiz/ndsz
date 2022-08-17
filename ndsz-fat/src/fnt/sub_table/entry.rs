@@ -4,12 +4,14 @@
 mod error;
 
 // Exports
-pub use error::FromReaderError;
+pub use self::error::FromReaderError;
 
 // Imports
-use byteorder::{LittleEndian, ReadBytesExt};
-use std::io;
-use zutil::AsciiStrArr;
+use {
+	byteorder::{LittleEndian, ReadBytesExt},
+	std::io,
+	zutil::AsciiStrArr,
+};
 
 /// Sub table entry
 #[derive(PartialEq, Eq, Clone, Copy, Debug)]

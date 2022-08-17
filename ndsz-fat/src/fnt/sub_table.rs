@@ -5,12 +5,16 @@ pub mod entry;
 mod error;
 
 // Exports
-pub use entry::{SubTableEntry, SubTableEntryKind};
-pub use error::FromReaderError;
+pub use self::{
+	entry::{SubTableEntry, SubTableEntryKind},
+	error::FromReaderError,
+};
 
 // Imports
-use itertools::Itertools;
-use std::{io, iter};
+use {
+	itertools::Itertools,
+	std::{io, iter},
+};
 
 /// Sub table
 #[derive(PartialEq, Eq, Clone, Debug)]

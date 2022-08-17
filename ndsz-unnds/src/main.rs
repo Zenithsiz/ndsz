@@ -7,16 +7,19 @@
 mod args;
 
 // Imports
-use self::args::Args;
-use anyhow::Context;
-use clap::Parser;
-use ndsz_fat::{dir, Dir, FileAllocationTable, FileNameTable};
-use std::{
-	fs, io,
-	path::{Path, PathBuf},
+use {
+	self::args::Args,
+	anyhow::Context,
+	clap::Parser,
+	ndsz_fat::{dir, Dir, FileAllocationTable, FileNameTable},
+	std::{
+		fs,
+		io,
+		path::{Path, PathBuf},
+	},
+	tracing_subscriber::prelude::*,
+	zutil::{AsciiStrArr, IoSlice, ReadByteArray},
 };
-use tracing_subscriber::prelude::*;
-use zutil::{AsciiStrArr, IoSlice, ReadByteArray};
 
 
 fn main() -> Result<(), anyhow::Error> {
@@ -125,7 +128,9 @@ impl<'fat, 'reader> dir::Visitor for DirVisitor<'fat, 'reader> {
 	}
 
 	fn visit_dir<'visitor, 'entry>(
-		&'visitor mut self, name: &'entry AsciiStrArr<0x80>, _id: u16,
+		&'visitor mut self,
+		name: &'entry AsciiStrArr<0x80>,
+		_id: u16,
 	) -> Result<Self::SubDirVisitor<'visitor, 'entry>, Self::Error> {
 		let path = self.cur_path.join(name.as_str());
 		println!("{}", path.display());
@@ -143,7 +148,10 @@ impl<'fat, 'reader> dir::Visitor for DirVisitor<'fat, 'reader> {
 
 /// Extracts all files from a fat directory
 fn extract_fat_dir(
-	dir: &Dir, reader: &fs::File, fat: &FileAllocationTable, path: PathBuf,
+	dir: &Dir,
+	reader: &fs::File,
+	fat: &FileAllocationTable,
+	path: PathBuf,
 ) -> Result<(), anyhow::Error> {
 	let mut visitor = DirVisitor {
 		fat,

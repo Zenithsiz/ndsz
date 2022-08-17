@@ -4,15 +4,17 @@
 mod error;
 
 // Exports
-pub use error::{FromReaderError, ReadDirError, ReadSubTableError};
+pub use self::error::{FromReaderError, ReadDirError, ReadSubTableError};
 
 // Imports
-use super::{SubTable, SubTableEntryKind};
-use crate::{Dir, DirEntry, DirEntryKind};
-use byteorder::{ByteOrder, LittleEndian};
-use itertools::Itertools;
-use std::{io, iter};
-use zutil::{IoSlice, MapBoxResult, ReadByteArray};
+use {
+	super::{SubTable, SubTableEntryKind},
+	crate::{Dir, DirEntry, DirEntryKind},
+	byteorder::{ByteOrder, LittleEndian},
+	itertools::Itertools,
+	std::{io, iter},
+	zutil::{IoSlice, MapBoxResult, ReadByteArray},
+};
 
 /// Main table
 #[derive(PartialEq, Eq, Clone, Debug)]
@@ -90,7 +92,10 @@ impl MainTableEntry {
 
 	/// Reads a directory from this entry
 	pub fn read_dir<R: io::Read + io::Seek>(
-		&self, reader: &mut R, id: u16, main_entries: &[MainTableEntry],
+		&self,
+		reader: &mut R,
+		id: u16,
+		main_entries: &[MainTableEntry],
 	) -> Result<Dir, ReadDirError> {
 		let sub_table = self.read_sub_table(reader).map_err(ReadDirError::ReadSubTable)?;
 		let mut parent_main_entries = main_entries.iter().filter(|main_entry| main_entry.parent_id == id);

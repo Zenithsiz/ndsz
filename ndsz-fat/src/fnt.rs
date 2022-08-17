@@ -6,13 +6,14 @@ pub mod main_table;
 pub mod sub_table;
 
 // Exports
-pub use error::FromReaderError;
-pub use main_table::{MainTable, MainTableEntry};
-pub use sub_table::{SubTable, SubTableEntry, SubTableEntryKind};
+pub use self::{
+	error::FromReaderError,
+	main_table::{MainTable, MainTableEntry},
+	sub_table::{SubTable, SubTableEntry, SubTableEntryKind},
+};
 
 // Imports
-use crate::Dir;
-use std::io;
+use {crate::Dir, std::io};
 
 /// File name table
 #[derive(PartialEq, Eq, Clone, Debug)]

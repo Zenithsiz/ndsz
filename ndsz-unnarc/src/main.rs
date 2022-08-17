@@ -7,14 +7,16 @@
 mod args;
 
 // Imports
-use self::args::Args;
-use anyhow::Context;
-use clap::Parser;
-use ndsz_fat::{dir, Dir, FileAllocationTable};
-use ndsz_narc::Narc;
-use std::{fs, io, path::PathBuf};
-use tracing_subscriber::prelude::*;
-use zutil::{AsciiStrArr, IoSlice};
+use {
+	self::args::Args,
+	anyhow::Context,
+	clap::Parser,
+	ndsz_fat::{dir, Dir, FileAllocationTable},
+	ndsz_narc::Narc,
+	std::{fs, io, path::PathBuf},
+	tracing_subscriber::prelude::*,
+	zutil::{AsciiStrArr, IoSlice},
+};
 
 
 fn main() -> Result<(), anyhow::Error> {
@@ -99,7 +101,9 @@ where
 	}
 
 	fn visit_dir<'visitor, 'entry>(
-		&'visitor mut self, name: &'entry AsciiStrArr<0x80>, _id: u16,
+		&'visitor mut self,
+		name: &'entry AsciiStrArr<0x80>,
+		_id: u16,
 	) -> Result<Self::SubDirVisitor<'visitor, 'entry>, Self::Error> {
 		let path = self.cur_path.join(name.as_str());
 		println!("{}", path.display());
@@ -117,7 +121,10 @@ where
 
 /// Extracts all files from a fat directory
 fn extract_fat_dir<'a, R>(
-	dir: &Dir, reader: &'a R, fat: &FileAllocationTable, path: PathBuf,
+	dir: &Dir,
+	reader: &'a R,
+	fat: &FileAllocationTable,
+	path: PathBuf,
 ) -> Result<(), anyhow::Error>
 where
 	&'a R: io::Read + io::Seek,

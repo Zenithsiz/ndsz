@@ -5,5 +5,4 @@ pub mod header;
 pub mod unit_code;
 
 // Exports
-pub use header::Header;
-pub use unit_code::UnitCode;
+pub use self::{header::Header, unit_code::UnitCode};

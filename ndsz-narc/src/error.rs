@@ -1,9 +1,11 @@
 //! Errors
 
 // Imports
-use crate::{data, header};
-use ndsz_fat::{fat, fnt};
-use std::io;
+use {
+	crate::{data, header},
+	ndsz_fat::{fat, fnt},
+	std::io,
+};
 
 /// Error for [`Narc::from_reader`](super::Narc::from_reader)
 #[derive(Debug, thiserror::Error)]
