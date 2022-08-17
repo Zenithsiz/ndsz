@@ -7,7 +7,9 @@
 mod args;
 
 // Imports
+use self::args::Args;
 use anyhow::Context;
+use clap::Parser;
 use ndsz_fat::{dir, Dir, FileAllocationTable, FileNameTable};
 use std::{
 	fs, io,
@@ -27,15 +29,15 @@ fn main() -> Result<(), anyhow::Error> {
 	.context("Unable to initialize logger")?;
 
 	// Get the arguments
-	let args = args::get().context("Unable to retrieve arguments")?;
+	let args = Args::parse();
 
 	// Open the rom
-	let mut rom_file = fs::File::open(args.game_path).context("Unable to open game file")?;
+	let mut input_file = fs::File::open(&args.input_path).context("Unable to open input file")?;
 
 	// Read the header
 	let header = {
-		let header_bytes = rom_file.read_byte_array().context("Unable to read rom header")?;
-		ndsz_nds::Header::from_bytes(&header_bytes).context("Unable to parse rom header")?
+		let header_bytes = input_file.read_byte_array().context("Unable to read header")?;
+		ndsz_nds::Header::from_bytes(&header_bytes).context("Unable to parse header")?
 	};
 
 	log::info!("Found header {header:#?}");
@@ -44,7 +46,7 @@ fn main() -> Result<(), anyhow::Error> {
 	let fat = {
 		// Get the fat
 		let mut fat_slice = IoSlice::new_with_offset_len(
-			&mut rom_file,
+			&mut input_file,
 			u64::from(header.file_allocation_table.offset),
 			u64::from(header.file_allocation_table.length),
 		)
@@ -57,7 +59,7 @@ fn main() -> Result<(), anyhow::Error> {
 	let fnt = {
 		// Get the fnt
 		let mut fnt_slice = IoSlice::new_with_offset_len(
-			&mut rom_file,
+			&mut input_file,
 			u64::from(header.file_name_table.offset),
 			u64::from(header.file_name_table.length),
 		)
@@ -67,17 +69,21 @@ fn main() -> Result<(), anyhow::Error> {
 		FileNameTable::from_reader(&mut fnt_slice).context("Unable to read fnt")?
 	};
 
+	// Get the output path
+	let output_path = match args.output_path {
+		Some(path) => path,
+		None => args.input_path.with_extension(""),
+	};
+
 	// Create the output directory if it doesn't exist
-	if !fs::try_exists(&args.output_path).context("Unable to check if output directory exists")? {
-		fs::create_dir_all(&args.output_path).context("Unable to create directory")?;
-	}
+	fs::create_dir_all(&output_path).context("Unable to create output directory")?;
 
 	// Extract all nds files
-	self::extract_all_parts(&rom_file, &header, &args.output_path).context("Unable to extract parts")?;
+	self::extract_all_parts(&input_file, &header, &output_path).context("Unable to extract parts")?;
 
 	// Extract the filesystem
-	let fs_dir = args.output_path.join("fs");
-	self::extract_fat_dir(&fnt.root, &rom_file, &fat, fs_dir).context("Unable to extract fat")?;
+	let fs_dir = output_path.join("fs");
+	self::extract_fat_dir(&fnt.root, &input_file, &fat, fs_dir).context("Unable to extract fat")?;
 
 	Ok(())
 }

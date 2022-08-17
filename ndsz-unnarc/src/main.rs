@@ -7,7 +7,9 @@
 mod args;
 
 // Imports
+use self::args::Args;
 use anyhow::Context;
+use clap::Parser;
 use ndsz_fat::{dir, Dir, FileAllocationTable};
 use ndsz_narc::Narc;
 use std::{fs, io, path::PathBuf};
@@ -25,10 +27,10 @@ fn main() -> Result<(), anyhow::Error> {
 	.context("Unable to initialize logger")?;
 
 	// Get the arguments
-	let args = args::get().context("Unable to retrieve arguments")?;
+	let args = Args::parse();
 
 	// Open the rom
-	let rom_file = fs::File::open(args.input_path).context("Unable to open game file")?;
+	let rom_file = fs::File::open(&args.input_path).context("Unable to open game file")?;
 
 	// Read the narc
 	let narc = match args.narcless {
@@ -36,15 +38,20 @@ fn main() -> Result<(), anyhow::Error> {
 		false => Narc::from_reader(rom_file).context("Unable to read narc")?,
 	};
 
+	// Get the output path
+	let output_path = match args.output_path {
+		Some(path) => path,
+		None => args.input_path.with_extension(""),
+	};
+
 	// Create the output directory if it doesn't exist
-	if !fs::try_exists(&args.output_path).context("Unable to check if output directory exists")? {
-		fs::create_dir_all(&args.output_path).context("Unable to create directory")?;
-	}
+	fs::create_dir_all(&output_path).context("Unable to create directory")?;
+
 	// Extract the filesystem
 	match args.extract_fat_on_empty_fnt && narc.fnt.root.entries.is_empty() {
-		true => self::extract_fat_entries::<IoSlice<fs::File>>(&narc.fat, &narc.data.0, args.output_path)
+		true => self::extract_fat_entries::<IoSlice<fs::File>>(&narc.fat, &narc.data.0, output_path)
 			.context("Unable to extract entries of fat")?,
-		false => self::extract_fat_dir::<IoSlice<fs::File>>(&narc.fnt.root, &narc.data.0, &narc.fat, args.output_path)
+		false => self::extract_fat_dir::<IoSlice<fs::File>>(&narc.fnt.root, &narc.data.0, &narc.fat, output_path)
 			.context("Unable to extract fat")?,
 	}
 
