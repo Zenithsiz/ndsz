@@ -10,7 +10,7 @@ pub use error::FromBytesError;
 use byteorder::{ByteOrder, LittleEndian};
 
 /// Header
-#[derive(PartialEq, Clone, Copy, Debug)]
+#[derive(PartialEq, Eq, Clone, Copy, Debug)]
 pub struct Header {
 	/// File size
 	pub file_size: u32,

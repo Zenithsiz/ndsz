@@ -4,7 +4,7 @@
 use zutil::ascii_str_arr;
 
 /// Error for [`Header::from_bytes`](super::Header::from_bytes)
-#[derive(PartialEq, Clone, Debug, thiserror::Error)]
+#[derive(PartialEq, Eq, Clone, Debug, thiserror::Error)]
 pub enum FromBytesError {
 	/// Unable to read game title
 	#[error("Unable to read game title")]

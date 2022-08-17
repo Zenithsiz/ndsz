@@ -1,7 +1,7 @@
 //! Unit code
 
 /// Unit code
-#[derive(PartialEq, Clone, Copy, Debug)]
+#[derive(PartialEq, Eq, Clone, Copy, Debug)]
 pub enum UnitCode {
 	Nds,
 	NdsDsi,

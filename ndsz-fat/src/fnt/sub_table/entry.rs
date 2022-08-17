@@ -12,7 +12,7 @@ use std::io;
 use zutil::AsciiStrArr;
 
 /// Sub table entry
-#[derive(PartialEq, Clone, Copy, Debug)]
+#[derive(PartialEq, Eq, Clone, Copy, Debug)]
 pub struct SubTableEntry {
 	/// Name
 	pub name: AsciiStrArr<0x80>,
@@ -22,7 +22,7 @@ pub struct SubTableEntry {
 }
 
 /// Sub table entry kind
-#[derive(PartialEq, Clone, Copy, Debug)]
+#[derive(PartialEq, Eq, Clone, Copy, Debug)]
 pub enum SubTableEntryKind {
 	File,
 	Dir { id: u16 },

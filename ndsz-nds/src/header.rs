@@ -13,7 +13,7 @@ use zutil::{ascii_str_arr::AsciiChar, AsciiStrArr};
 
 /// Header
 // From `http://dsibrew.org/wiki/DSi_cartridge_header`.
-#[derive(PartialEq, Clone, Copy, Debug)]
+#[derive(PartialEq, Eq, Clone, Copy, Debug)]
 pub struct Header {
 	/// Game title
 	pub game_title: AsciiStrArr<0xc>,
@@ -185,7 +185,7 @@ impl Header {
 }
 
 /// Table load data
-#[derive(PartialEq, Clone, Copy, Debug)]
+#[derive(PartialEq, Eq, Clone, Copy, Debug)]
 pub struct TableLoadData {
 	/// Offset
 	pub offset: u32,
@@ -210,7 +210,7 @@ impl TableLoadData {
 }
 
 /// Arm load data
-#[derive(PartialEq, Clone, Copy, Debug)]
+#[derive(PartialEq, Eq, Clone, Copy, Debug)]
 pub struct ArmLoadData {
 	/// Offset
 	pub offset: u32,

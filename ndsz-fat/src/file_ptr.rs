@@ -4,7 +4,7 @@
 use byteorder::{ByteOrder, LittleEndian};
 
 /// File pointer
-#[derive(PartialEq, Clone, Copy, Debug)]
+#[derive(PartialEq, Eq, Clone, Copy, Debug)]
 pub struct FilePtr {
 	/// Start address
 	pub start_address: u32,

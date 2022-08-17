@@ -15,7 +15,7 @@ use std::{io, iter};
 use zutil::{IoSlice, MapBoxResult, ReadByteArray};
 
 /// Main table
-#[derive(PartialEq, Clone, Debug)]
+#[derive(PartialEq, Eq, Clone, Debug)]
 pub struct MainTable {
 	/// Root entry
 	pub root_entry: MainTableEntry,
@@ -51,7 +51,7 @@ impl MainTable {
 }
 
 /// Main table entry
-#[derive(PartialEq, Clone, Copy, Debug)]
+#[derive(PartialEq, Eq, Clone, Copy, Debug)]
 pub struct MainTableEntry {
 	/// Offset to sub table
 	pub sub_table_offset: u32,

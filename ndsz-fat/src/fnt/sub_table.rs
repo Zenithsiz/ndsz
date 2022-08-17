@@ -13,7 +13,7 @@ use itertools::Itertools;
 use std::{io, iter};
 
 /// Sub table
-#[derive(PartialEq, Clone, Debug)]
+#[derive(PartialEq, Eq, Clone, Debug)]
 pub struct SubTable {
 	/// All entries
 	pub entries: Vec<SubTableEntry>,

@@ -15,7 +15,7 @@ use crate::Dir;
 use std::io;
 
 /// File name table
-#[derive(PartialEq, Clone, Debug)]
+#[derive(PartialEq, Eq, Clone, Debug)]
 pub struct FileNameTable {
 	/// Root directory
 	pub root: Dir,

@@ -7,12 +7,12 @@ mod error;
 pub use error::FromReaderError;
 
 // Imports
+use crate::FilePtr;
 use itertools::Itertools;
 use std::{io, iter};
-use crate::FilePtr;
 
 /// File allocation table
-#[derive(PartialEq, Clone, Debug)]
+#[derive(PartialEq, Eq, Clone, Debug)]
 pub struct FileAllocationTable {
 	/// All pointers
 	pub ptrs: Vec<FilePtr>,

@@ -4,7 +4,7 @@
 use std::path::PathBuf;
 
 /// Arguments
-#[derive(PartialEq, Clone, Debug)]
+#[derive(PartialEq, Eq, Clone, Debug)]
 pub struct Args {
 	/// Input path
 	pub input_path: PathBuf,

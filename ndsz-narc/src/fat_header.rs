@@ -4,7 +4,7 @@
 use byteorder::{ByteOrder, LittleEndian};
 
 /// Narc fat header
-#[derive(PartialEq, Clone, Copy, Debug)]
+#[derive(PartialEq, Eq, Clone, Copy, Debug)]
 pub struct FatHeader {
 	/// Chunk size
 	pub chunk_size: u32,

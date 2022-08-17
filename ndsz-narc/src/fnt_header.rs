@@ -4,7 +4,7 @@
 use byteorder::{ByteOrder, LittleEndian};
 
 /// Narc fnt header
-#[derive(PartialEq, Clone, Copy, Debug)]
+#[derive(PartialEq, Eq, Clone, Copy, Debug)]
 pub struct FntHeader {
 	/// Chunk size
 	pub chunk_size: u32,

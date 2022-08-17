@@ -1,8 +1,5 @@
 //! `.narc` implementation
 
-// Features
-#![feature()]
-
 // Modules
 pub mod data;
 mod error;

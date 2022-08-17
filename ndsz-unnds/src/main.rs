@@ -1,7 +1,7 @@
 //! Unpacks a `.nds`
 
 // Features
-#![feature(format_args_capture, generic_associated_types, path_try_exists)]
+#![feature(generic_associated_types, fs_try_exists)]
 
 // Modules
 mod args;
@@ -99,7 +99,9 @@ struct DirVisitor<'fat, 'reader> {
 
 impl<'fat, 'reader> dir::Visitor for DirVisitor<'fat, 'reader> {
 	type Error = anyhow::Error;
-	type SubDirVisitor<'visitor, 'entry> = DirVisitor<'fat, 'reader>;
+	type SubDirVisitor<'visitor, 'entry> = DirVisitor<'fat, 'reader>
+	where
+		Self: 'visitor;
 
 	fn visit_file(&mut self, name: &AsciiStrArr<0x80>, id: u16) -> Result<(), Self::Error> {
 		let path = self.cur_path.join(name.as_str());
@@ -131,8 +133,8 @@ impl<'fat, 'reader> dir::Visitor for DirVisitor<'fat, 'reader> {
 
 		Ok(DirVisitor {
 			cur_path: path,
-			reader:   &mut self.reader,
-			fat:      &*self.fat,
+			reader:   self.reader,
+			fat:      self.fat,
 		})
 	}
 }

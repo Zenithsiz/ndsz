@@ -10,7 +10,7 @@ pub use visitor::Visitor;
 use zutil::AsciiStrArr;
 
 /// Directory
-#[derive(PartialEq, Clone, Debug)]
+#[derive(PartialEq, Eq, Clone, Debug)]
 pub struct Dir {
 	/// Id
 	pub id: u16,
@@ -41,7 +41,7 @@ impl Dir {
 }
 
 /// Directory entry
-#[derive(PartialEq, Clone, Debug)]
+#[derive(PartialEq, Eq, Clone, Debug)]
 pub struct DirEntry {
 	/// Name
 	pub name: AsciiStrArr<0x80>,
@@ -51,7 +51,7 @@ pub struct DirEntry {
 }
 
 /// Directory entry kind
-#[derive(PartialEq, Clone, Debug)]
+#[derive(PartialEq, Eq, Clone, Debug)]
 pub enum DirEntryKind {
 	/// File
 	File {
