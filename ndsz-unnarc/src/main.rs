@@ -1,7 +1,7 @@
 //! Unpacks a `.narc`
 
 // Features
-#![feature(generic_associated_types, fs_try_exists)]
+#![feature(fs_try_exists)]
 
 // Modules
 mod args;

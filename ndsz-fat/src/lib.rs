@@ -1,7 +1,6 @@
 //! `.nds` and `.narc` Fat + Fnt implementation
 
 // Features
-#![feature(generic_associated_types)]
 
 // Modules
 pub mod dir;
