@@ -20,8 +20,9 @@ pub use self::{
 use {
 	byteorder::{LittleEndian, ReadBytesExt},
 	ndsz_fat::{FileAllocationTable, FileNameTable},
+	ndsz_util::ReadByteArray,
 	std::io::{self, Read, Seek, SeekFrom},
-	zutil::{IoSlice, ReadByteArray},
+	zutil::IoSlice,
 };
 
 /// Narc file

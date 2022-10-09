@@ -12,14 +12,14 @@ use {
 	anyhow::Context,
 	clap::Parser,
 	ndsz_fat::{dir, Dir, FileAllocationTable, FileNameTable},
-	ndsz_util::AsciiStrArr,
+	ndsz_util::{AsciiStrArr, ReadByteArray},
 	std::{
 		fs,
 		io,
 		path::{Path, PathBuf},
 	},
 	tracing_subscriber::prelude::*,
-	zutil::{IoSlice, ReadByteArray},
+	zutil::IoSlice,
 };
 
 

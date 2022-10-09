@@ -12,8 +12,9 @@ use {
 	crate::{Dir, DirEntry, DirEntryKind},
 	byteorder::{ByteOrder, LittleEndian},
 	itertools::Itertools,
+	ndsz_util::ReadByteArray,
 	std::{io, iter},
-	zutil::{IoSlice, ReadByteArray},
+	zutil::IoSlice,
 };
 
 /// Main table

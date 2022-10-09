@@ -10,6 +10,7 @@ version = "0.0.0"
 # Ndsz
 ndsz-bytes = {path = "../ndsz-bytes"}
 ndsz-fat = {path = "../ndsz-fat"}
+ndsz-util = {path = "../ndsz-util"}
 
 # Bytes
 byteorder = "1.4.3"
