@@ -22,7 +22,7 @@ impl FatHeader {
 
 	/// Parses a header data from bytes
 	pub fn from_bytes(bytes: &[u8; Self::SIZE]) -> Option<Self> {
-		let bytes = zutil::array_split!(bytes,
+		let bytes = ndsz_bytes::array_split!(bytes,
 			chunk_name: [0x4],
 			chunk_size: [0x4],
 			files_len : [0x2],

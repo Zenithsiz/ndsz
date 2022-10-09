@@ -19,7 +19,7 @@ pub struct Header {
 impl Header {
 	/// Parses a header data from bytes
 	pub fn from_bytes(bytes: &[u8; 0x10]) -> Result<Self, FromBytesError> {
-		let bytes = zutil::array_split!(bytes,
+		let bytes = ndsz_bytes::array_split!(bytes,
 			chunk_name: [0x4],
 			byte_order: [0x2],
 			version   : [0x2],

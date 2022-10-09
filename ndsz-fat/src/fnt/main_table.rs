@@ -69,7 +69,7 @@ pub struct MainTableEntry {
 impl MainTableEntry {
 	/// Parses an entry from bytes
 	pub fn from_bytes(bytes: &[u8; 0x8]) -> Self {
-		let bytes = zutil::array_split!(bytes,
+		let bytes = ndsz_bytes::array_split!(bytes,
 			sub_table_offset: [0x4],
 			first_file_id   : [0x2],
 			parent_id       : [0x2],

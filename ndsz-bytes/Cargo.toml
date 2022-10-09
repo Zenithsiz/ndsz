@@ -1,0 +1,13 @@
+[package]
+edition = "2018"
+name = "ndsz-bytes"
+version = "0.1.0"
+
+[dependencies]
+
+# Bytes
+arrayref = "0.3.6"
+byteorder = "1.4.2"
+
+# Error handling
+thiserror = "1.0.23"

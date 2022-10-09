@@ -8,6 +8,7 @@ version = "0.0.0"
 [dependencies]
 
 # Ndsz
+ndsz-bytes = {path = "../ndsz-bytes"}
 ndsz-fat = {path = "../ndsz-fat"}
 
 # Bytes

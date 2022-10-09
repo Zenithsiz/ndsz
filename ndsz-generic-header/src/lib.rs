@@ -28,7 +28,7 @@ pub struct Header {
 impl Header {
 	/// Parses a header from bytes
 	pub fn from_bytes(bytes: &[u8; 0x10]) -> Result<Self, FromBytesError> {
-		let bytes = zutil::array_split!(bytes,
+		let bytes = ndsz_bytes::array_split!(bytes,
 			magic           : [0x4],
 			constant        : [0x4],
 			section_size    : [0x4],

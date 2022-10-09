@@ -16,7 +16,7 @@ pub struct FilePtr {
 impl FilePtr {
 	/// Parses a header data from bytes
 	pub fn from_bytes(bytes: &[u8; 0x8]) -> Self {
-		let bytes = zutil::array_split!(bytes,
+		let bytes = ndsz_bytes::array_split!(bytes,
 			start_address: [0x4],
 			  end_address: [0x4],
 		);

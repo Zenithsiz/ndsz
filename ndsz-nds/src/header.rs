@@ -114,7 +114,7 @@ pub struct Header {
 impl Header {
 	/// Parses a header data from bytes
 	pub fn from_bytes(bytes: &[u8; 0x180]) -> Result<Self, FromBytesError> {
-		let bytes = zutil::array_split!(bytes,
+		let bytes = ndsz_bytes::array_split!(bytes,
 			game_title                            : [0xc],  // 0x0
 			game_code                             : [0x4],  // 0xc
 			maker_code                            : [0x2],  // 0x10
@@ -199,7 +199,7 @@ pub struct TableLoadData {
 impl TableLoadData {
 	/// Parses a table load data from bytes
 	pub fn from_bytes(bytes: &[u8; 8]) -> Self {
-		let bytes = zutil::array_split!(bytes,
+		let bytes = ndsz_bytes::array_split!(bytes,
 			offset: [0x4],
 			length: [0x4],
 		);
@@ -230,7 +230,7 @@ pub struct ArmLoadData {
 impl ArmLoadData {
 	/// Parses load data from bytes
 	pub fn from_bytes(bytes: &[u8; 16]) -> Self {
-		let bytes = zutil::array_split!(bytes,
+		let bytes = ndsz_bytes::array_split!(bytes,
 			offset       : [0x4],
 			entry_address: [0x4],
 			load_address : [0x4],
