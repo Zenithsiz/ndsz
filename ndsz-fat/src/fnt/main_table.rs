@@ -13,7 +13,7 @@ use {
 	byteorder::{ByteOrder, LittleEndian},
 	itertools::Itertools,
 	std::{io, iter},
-	zutil::{IoSlice, MapBoxResult, ReadByteArray},
+	zutil::{IoSlice, ReadByteArray},
 };
 
 /// Main table
@@ -115,7 +115,7 @@ impl MainTableEntry {
 						let main_entry = parent_main_entries.next().ok_or(ReadDirError::NoMainEntry)?;
 						let dir = main_entry
 							.read_dir(reader, id, main_entries)
-							.box_map_err(ReadDirError::ReadSubDir)?;
+							.map_err(|err| ReadDirError::ReadSubDir(Box::new(err)))?;
 
 						DirEntryKind::Dir { id, dir }
 					},
