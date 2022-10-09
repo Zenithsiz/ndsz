@@ -7,7 +7,7 @@ pub mod visitor;
 pub use visitor::Visitor;
 
 // Imports
-use zutil::AsciiStrArr;
+use ndsz_util::AsciiStrArr;
 
 /// Directory
 #[derive(PartialEq, Eq, Clone, Debug)]

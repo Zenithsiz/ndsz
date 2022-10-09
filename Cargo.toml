@@ -8,6 +8,8 @@ members = [
   "ndsz-mknds",
   "ndsz-unnds",
   "ndsz-unnarc",
+  "ndsz-bytes",
+  "ndsz-util",
 ]
 
 [patch."https://github.com/Zenithsiz/zutil"]

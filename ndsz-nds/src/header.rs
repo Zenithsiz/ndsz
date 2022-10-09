@@ -10,7 +10,7 @@ pub use error::FromBytesError;
 use {
 	crate::UnitCode,
 	byteorder::{ByteOrder, LittleEndian},
-	zutil::{ascii_str_arr::AsciiChar, AsciiStrArr},
+	ndsz_util::{ascii_str_arr::AsciiChar, AsciiStrArr},
 };
 
 /// Header

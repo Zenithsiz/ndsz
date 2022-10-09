@@ -13,9 +13,10 @@ use {
 	clap::Parser,
 	ndsz_fat::{dir, Dir, FileAllocationTable},
 	ndsz_narc::Narc,
+	ndsz_util::AsciiStrArr,
 	std::{fs, io, path::PathBuf},
 	tracing_subscriber::prelude::*,
-	zutil::{AsciiStrArr, IoSlice},
+	zutil::IoSlice,
 };
 
 

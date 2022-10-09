@@ -1,7 +1,7 @@
 //! Errors
 
 // Imports
-use zutil::ascii_str_arr;
+use ndsz_util::ascii_str_arr;
 
 /// Error for [`Header::from_bytes`](super::Header::from_bytes)
 #[derive(PartialEq, Eq, Clone, Debug, thiserror::Error)]

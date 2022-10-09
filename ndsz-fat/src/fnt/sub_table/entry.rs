@@ -9,8 +9,8 @@ pub use self::error::FromReaderError;
 // Imports
 use {
 	byteorder::{LittleEndian, ReadBytesExt},
+	ndsz_util::AsciiStrArr,
 	std::io,
-	zutil::AsciiStrArr,
 };
 
 /// Sub table entry

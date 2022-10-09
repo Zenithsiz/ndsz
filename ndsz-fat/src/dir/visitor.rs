@@ -1,7 +1,7 @@
 //! Directory visitor
 
 // Imports
-use zutil::AsciiStrArr;
+use ndsz_util::AsciiStrArr;
 
 /// A directory visitor
 pub trait Visitor {

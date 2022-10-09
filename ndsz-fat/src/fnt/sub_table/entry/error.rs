@@ -1,7 +1,7 @@
 //! Errors
 
 // Imports
-use {std::io, zutil::ascii_str_arr};
+use {ndsz_util::ascii_str_arr, std::io};
 
 /// Error for [`SubTableEntry::from_reader`](super::SubTableEntry::from_reader)
 #[derive(Debug, thiserror::Error)]
