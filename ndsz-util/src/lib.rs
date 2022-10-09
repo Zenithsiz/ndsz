@@ -3,13 +3,19 @@
 //! Most here might be moved to external creates if deemed worth it
 
 // Features
-#![feature(slice_index_methods)]
+#![feature(slice_index_methods, seek_stream_len)]
 
 // Modules
 pub mod ascii_str_arr;
+pub mod io_slice;
+pub mod write_take;
 
 // Exports
-pub use ascii_str_arr::AsciiStrArr;
+pub use {
+	ascii_str_arr::AsciiStrArr,
+	io_slice::IoSlice,
+	write_take::{WriteTake, WriteTakeExt},
+};
 
 /// Helper to read an array of bytes from a reader
 pub trait ReadByteArray {

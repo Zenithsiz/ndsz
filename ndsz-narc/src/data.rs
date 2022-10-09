@@ -9,9 +9,8 @@ pub use error::{FromReaderError, NarclessFromReaderError};
 // Imports
 use {
 	byteorder::{ByteOrder, LittleEndian},
-	ndsz_util::ReadByteArray,
+	ndsz_util::{IoSlice, ReadByteArray},
 	std::io,
-	zutil::IoSlice,
 };
 
 /// Narc data
