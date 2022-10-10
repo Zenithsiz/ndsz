@@ -5,16 +5,17 @@
 
 // Modules
 mod args;
+mod debug_fat;
+mod debug_fnt;
 
 // Imports
 use {
-	self::args::Args,
+	self::{args::Args, debug_fat::output_fat_yaml, debug_fnt::output_fnt_yaml},
 	anyhow::Context,
 	clap::Parser,
-	ndsz_fat::{dir, Dir, DirEntry, DirEntryKind, FileAllocationTable, FileNameTable},
+	ndsz_fat::{dir, Dir, FileAllocationTable, FileNameTable},
 	ndsz_util::{AsciiStrArr, IoSlice, ReadByteArray},
 	std::{
-		collections::BTreeMap,
 		fs,
 		io,
 		path::{Path, PathBuf},
@@ -242,123 +243,4 @@ fn extract_part(rom_file: &fs::File, offset: u32, size: u32, name: &str, path: &
 	io::copy(&mut slice, &mut file).with_context(|| format!("Unable to write {name} to file"))?;
 
 	Ok(())
-}
-
-/// Outputs `fat` as yaml to `path`
-fn output_fat_yaml(fat: &FileAllocationTable, path: PathBuf) -> Result<(), anyhow::Error> {
-	let fat = FatYaml {
-		files: fat
-			.ptrs
-			.iter()
-			.map(|ptr| FatFileYaml {
-				start: ptr.start_address,
-				end:   ptr.end_address,
-			})
-			.enumerate()
-			.collect(),
-	};
-
-	let output = fs::File::create(&path).with_context(|| format!("Unable to create file {path:?}"))?;
-	serde_yaml::to_writer(output, &fat).context("Unable to serialize fat")?;
-
-	Ok(())
-}
-
-/// Fat
-#[derive(Clone, Debug)]
-#[derive(serde::Serialize)]
-struct FatYaml {
-	/// All files, by inode
-	files: BTreeMap<usize, FatFileYaml>,
-}
-
-/// Fat file
-#[derive(Clone, Debug)]
-#[derive(serde::Serialize)]
-pub struct FatFileYaml {
-	/// Start address
-	pub start: u32,
-
-	/// End address
-	pub end: u32,
-}
-
-
-/// Outputs `fnt` as yaml to `path`
-fn output_fnt_yaml(fnt: &FileNameTable, path: PathBuf) -> Result<(), anyhow::Error> {
-	let fnt = FntYaml {
-		root: FntDirYaml::new(&fnt.root),
-	};
-
-	let output = fs::File::create(&path).with_context(|| format!("Unable to create file {path:?}"))?;
-	serde_yaml::to_writer(output, &fnt).context("Unable to serialize fnt")?;
-
-	Ok(())
-}
-
-/// Fnt
-#[derive(Clone, Debug)]
-#[derive(serde::Serialize)]
-struct FntYaml {
-	/// Root directory
-	root: FntDirYaml,
-}
-
-/// Fnt directory
-#[derive(Clone, Debug)]
-#[derive(serde::Serialize)]
-pub struct FntDirYaml {
-	/// Entries
-	pub entries: Vec<FntDirEntryYaml>,
-}
-
-impl FntDirYaml {
-	pub fn new(dir: &Dir) -> Self {
-		Self {
-			entries: dir.entries.iter().map(FntDirEntryYaml::new).collect(),
-		}
-	}
-}
-
-
-/// Fnt directory entry
-#[derive(Clone, Debug)]
-#[derive(serde::Serialize)]
-pub struct FntDirEntryYaml {
-	/// Name
-	pub name: AsciiStrArr<0x80>,
-
-	/// Kind
-	#[serde(flatten)]
-	pub kind: FntDirEntryKindYaml,
-}
-
-impl FntDirEntryYaml {
-	pub fn new(entry: &DirEntry) -> Self {
-		Self {
-			name: entry.name,
-			kind: FntDirEntryKindYaml::new(&entry.kind),
-		}
-	}
-}
-
-/// Fnt directory entry kind
-#[derive(Clone, Debug)]
-#[derive(serde::Serialize)]
-#[serde(untagged)]
-pub enum FntDirEntryKindYaml {
-	File { id: u16 },
-	Dir { id: u16, dir: FntDirYaml },
-}
-
-impl FntDirEntryKindYaml {
-	pub fn new(kind: &DirEntryKind) -> Self {
-		match *kind {
-			DirEntryKind::File { id } => Self::File { id },
-			DirEntryKind::Dir { id, ref dir } => Self::Dir {
-				id,
-				dir: FntDirYaml::new(dir),
-			},
-		}
-	}
 }
