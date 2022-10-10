@@ -16,7 +16,6 @@ ndsz-util = {path = "../ndsz-util"}
 clap = {version = "3.2.17", features = ["derive"]}
 
 # Util
-zutil = {git = "https://github.com/Zenithsiz/zutil", rev = "2a029369ac5aa4e7dbd6f6afb78ae419ee18666f"}
 
 # Error handling
 anyhow = "1.0.62"

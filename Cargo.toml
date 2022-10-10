@@ -11,6 +11,3 @@ members = [
   "ndsz-bytes",
   "ndsz-util",
 ]
-
-[patch."https://github.com/Zenithsiz/zutil"]
-zutil = {path = "../zutil"}

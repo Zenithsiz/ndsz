@@ -17,7 +17,6 @@ byteorder = "1.4.3"
 
 # Util
 itertools = "0.10.3"
-zutil = {git = "https://github.com/Zenithsiz/zutil", rev = "2a029369ac5aa4e7dbd6f6afb78ae419ee18666f"}
 
 # Error handling
 thiserror = "1.0.32"
