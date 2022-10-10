@@ -11,9 +11,10 @@ use {
 	self::args::Args,
 	anyhow::Context,
 	clap::Parser,
-	ndsz_fat::{dir, Dir, FileAllocationTable, FileNameTable},
+	ndsz_fat::{dir, Dir, DirEntry, DirEntryKind, FileAllocationTable, FileNameTable},
 	ndsz_util::{AsciiStrArr, IoSlice, ReadByteArray},
 	std::{
+		collections::BTreeMap,
 		fs,
 		io,
 		path::{Path, PathBuf},
@@ -30,6 +31,12 @@ fn main() -> Result<(), anyhow::Error> {
 
 	// Get the arguments
 	let args = Args::parse();
+
+	// Get the output path
+	let output_path = match args.output_path {
+		Some(path) => path,
+		None => args.input_path.with_extension(""),
+	};
 
 	// Open the rom
 	let mut input_file = fs::File::open(&args.input_path).context("Unable to open input file")?;
@@ -54,6 +61,30 @@ fn main() -> Result<(), anyhow::Error> {
 		FileAllocationTable::from_reader(&mut fat_slice).context("Unable to get fat")?
 	};
 
+	// Output the fat, if requested
+	if args.fat {
+		let fat_path = output_path.join("fat.yaml");
+		self::output_fat_yaml(&fat, fat_path).context("Unable to output fat yaml")?;
+	}
+
+	// Output the fat files, if requested
+	if args.fat_files {
+		let fat_dir = output_path.join("fat");
+		fs::create_dir_all(&fat_dir).context("Unable to create fat output directory")?;
+
+		for (idx, ptr) in fat.ptrs.iter().enumerate() {
+			let name = format!("{idx}.bin");
+			self::extract_part(
+				&input_file,
+				ptr.start_address,
+				ptr.end_address - ptr.start_address,
+				&name,
+				&fat_dir,
+			)
+			.with_context(|| format!("Unable to extract fat entry #{idx} ({ptr:?})"))?;
+		}
+	}
+
 	// Get the fnt
 	let fnt = {
 		// Get the fnt
@@ -68,11 +99,11 @@ fn main() -> Result<(), anyhow::Error> {
 		FileNameTable::from_reader(&mut fnt_slice).context("Unable to read fnt")?
 	};
 
-	// Get the output path
-	let output_path = match args.output_path {
-		Some(path) => path,
-		None => args.input_path.with_extension(""),
-	};
+	// Output the fnt, if requested
+	if args.fnt {
+		let fnt_path = output_path.join("fnt.yaml");
+		self::output_fnt_yaml(&fnt, fnt_path).context("Unable to output fnt yaml")?;
+	}
 
 	// Create the output directory if it doesn't exist
 	fs::create_dir_all(&output_path).context("Unable to create output directory")?;
@@ -164,7 +195,7 @@ fn extract_fat_dir(
 
 /// Extract all parts of the nds header, except the filesystem
 fn extract_all_parts(rom_file: &fs::File, header: &ndsz_nds::Header, path: &Path) -> Result<(), anyhow::Error> {
-	let var_name = [
+	let parts = [
 		(
 			header.arm9_load_data.offset,
 			header.arm9_load_data.size,
@@ -187,7 +218,7 @@ fn extract_all_parts(rom_file: &fs::File, header: &ndsz_nds::Header, path: &Path
 		),
 	];
 
-	for (offset, size, name) in var_name {
+	for (offset, size, name) in parts {
 		self::extract_part(rom_file, offset, size, name, path).with_context(|| format!("Unable to extract {name}"))?;
 	}
 
@@ -211,4 +242,123 @@ fn extract_part(rom_file: &fs::File, offset: u32, size: u32, name: &str, path: &
 	io::copy(&mut slice, &mut file).with_context(|| format!("Unable to write {name} to file"))?;
 
 	Ok(())
+}
+
+/// Outputs `fat` as yaml to `path`
+fn output_fat_yaml(fat: &FileAllocationTable, path: PathBuf) -> Result<(), anyhow::Error> {
+	let fat = FatYaml {
+		files: fat
+			.ptrs
+			.iter()
+			.map(|ptr| FatFileYaml {
+				start: ptr.start_address,
+				end:   ptr.end_address,
+			})
+			.enumerate()
+			.collect(),
+	};
+
+	let output = fs::File::create(&path).with_context(|| format!("Unable to create file {path:?}"))?;
+	serde_yaml::to_writer(output, &fat).context("Unable to serialize fat")?;
+
+	Ok(())
+}
+
+/// Fat
+#[derive(Clone, Debug)]
+#[derive(serde::Serialize)]
+struct FatYaml {
+	/// All files, by inode
+	files: BTreeMap<usize, FatFileYaml>,
+}
+
+/// Fat file
+#[derive(Clone, Debug)]
+#[derive(serde::Serialize)]
+pub struct FatFileYaml {
+	/// Start address
+	pub start: u32,
+
+	/// End address
+	pub end: u32,
+}
+
+
+/// Outputs `fnt` as yaml to `path`
+fn output_fnt_yaml(fnt: &FileNameTable, path: PathBuf) -> Result<(), anyhow::Error> {
+	let fnt = FntYaml {
+		root: FntDirYaml::new(&fnt.root),
+	};
+
+	let output = fs::File::create(&path).with_context(|| format!("Unable to create file {path:?}"))?;
+	serde_yaml::to_writer(output, &fnt).context("Unable to serialize fnt")?;
+
+	Ok(())
+}
+
+/// Fnt
+#[derive(Clone, Debug)]
+#[derive(serde::Serialize)]
+struct FntYaml {
+	/// Root directory
+	root: FntDirYaml,
+}
+
+/// Fnt directory
+#[derive(Clone, Debug)]
+#[derive(serde::Serialize)]
+pub struct FntDirYaml {
+	/// Entries
+	pub entries: Vec<FntDirEntryYaml>,
+}
+
+impl FntDirYaml {
+	pub fn new(dir: &Dir) -> Self {
+		Self {
+			entries: dir.entries.iter().map(FntDirEntryYaml::new).collect(),
+		}
+	}
+}
+
+
+/// Fnt directory entry
+#[derive(Clone, Debug)]
+#[derive(serde::Serialize)]
+pub struct FntDirEntryYaml {
+	/// Name
+	pub name: AsciiStrArr<0x80>,
+
+	/// Kind
+	#[serde(flatten)]
+	pub kind: FntDirEntryKindYaml,
+}
+
+impl FntDirEntryYaml {
+	pub fn new(entry: &DirEntry) -> Self {
+		Self {
+			name: entry.name,
+			kind: FntDirEntryKindYaml::new(&entry.kind),
+		}
+	}
+}
+
+/// Fnt directory entry kind
+#[derive(Clone, Debug)]
+#[derive(serde::Serialize)]
+#[serde(untagged)]
+pub enum FntDirEntryKindYaml {
+	File { id: u16 },
+	Dir { id: u16, dir: FntDirYaml },
+}
+
+impl FntDirEntryKindYaml {
+	pub fn new(kind: &DirEntryKind) -> Self {
+		match *kind {
+			DirEntryKind::File { id } => Self::File { id },
+			DirEntryKind::Dir { id, ref dir } => Self::Dir {
+				id,
+				dir: FntDirYaml::new(dir),
+			},
+		}
+	}
 }
