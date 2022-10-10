@@ -70,20 +70,7 @@ fn main() -> Result<(), anyhow::Error> {
 
 	// Output the fat files, if requested
 	if args.fat_files {
-		let fat_dir = output_path.join("fat");
-		fs::create_dir_all(&fat_dir).context("Unable to create fat output directory")?;
-
-		for (idx, ptr) in fat.ptrs.iter().enumerate() {
-			let name = format!("{idx}.bin");
-			self::extract_part(
-				&input_file,
-				ptr.start_address,
-				ptr.end_address - ptr.start_address,
-				&name,
-				&fat_dir,
-			)
-			.with_context(|| format!("Unable to extract fat entry #{idx} ({ptr:?})"))?;
-		}
+		self::extract_raw_fat(&fat, &mut input_file, &output_path)?;
 	}
 
 	// Get the fnt
@@ -110,17 +97,40 @@ fn main() -> Result<(), anyhow::Error> {
 	fs::create_dir_all(&output_path).context("Unable to create output directory")?;
 
 	// Extract all nds files
-	self::extract_all_parts(&input_file, &header, &output_path).context("Unable to extract parts")?;
+	self::extract_all_parts(&mut input_file, &header, &output_path).context("Unable to extract parts")?;
 
 	// Extract the filesystem
 	let fs_dir = output_path.join("fs");
-	self::extract_fat_dir(&fnt.root, &input_file, &fat, fs_dir).context("Unable to extract fat")?;
+	self::extract_fat_dir(&fnt.root, &mut input_file, &fat, fs_dir).context("Unable to extract fat")?;
+
+	Ok(())
+}
+
+/// Extracts the fat without the fnt
+fn extract_raw_fat<R: io::Read + io::Seek>(
+	fat: &FileAllocationTable,
+	rom_file: &mut R,
+	output_path: &Path,
+) -> Result<(), anyhow::Error> {
+	let fat_dir = output_path.join("fat");
+	fs::create_dir_all(&fat_dir).context("Unable to create fat output directory")?;
+	for (idx, ptr) in fat.ptrs.iter().enumerate() {
+		let name = format!("{idx}.bin");
+		self::extract_part(
+			rom_file,
+			ptr.start_address,
+			ptr.end_address - ptr.start_address,
+			&name,
+			&fat_dir,
+		)
+		.with_context(|| format!("Unable to extract fat entry #{idx} ({ptr:?})"))?;
+	}
 
 	Ok(())
 }
 
 /// Directory visitor
-struct DirVisitor<'fat, 'reader> {
+struct DirVisitor<'fat, 'reader, R> {
 	/// Current path
 	cur_path: PathBuf,
 
@@ -128,15 +138,15 @@ struct DirVisitor<'fat, 'reader> {
 	// Note: Has to be immutable due to a GAT bug.
 	//       This also implies we can't use a BufReader.
 	// TODO: Make this `&'reader mut R` once the GAT bug is solved.
-	reader: &'reader fs::File,
+	reader: &'reader mut R,
 
 	/// The fat
 	fat: &'fat FileAllocationTable,
 }
 
-impl<'fat, 'reader> dir::Visitor for DirVisitor<'fat, 'reader> {
+impl<'fat, 'reader, R: io::Read + io::Seek> dir::Visitor for DirVisitor<'fat, 'reader, R> {
 	type Error = anyhow::Error;
-	type SubDirVisitor<'visitor, 'entry> = DirVisitor<'fat, 'reader>
+	type SubDirVisitor<'visitor, 'entry> = DirVisitor<'fat, 'visitor, R>
 	where
 		Self: 'visitor;
 
@@ -179,9 +189,9 @@ impl<'fat, 'reader> dir::Visitor for DirVisitor<'fat, 'reader> {
 }
 
 /// Extracts all files from a fat directory
-fn extract_fat_dir(
+fn extract_fat_dir<R: io::Read + io::Seek>(
 	dir: &Dir,
-	reader: &fs::File,
+	reader: &mut R,
 	fat: &FileAllocationTable,
 	path: PathBuf,
 ) -> Result<(), anyhow::Error> {
@@ -195,7 +205,11 @@ fn extract_fat_dir(
 
 
 /// Extract all parts of the nds header, except the filesystem
-fn extract_all_parts(rom_file: &fs::File, header: &ndsz_nds::Header, path: &Path) -> Result<(), anyhow::Error> {
+fn extract_all_parts<R: io::Read + io::Seek>(
+	rom_file: &mut R,
+	header: &ndsz_nds::Header,
+	path: &Path,
+) -> Result<(), anyhow::Error> {
 	let parts = [
 		(
 			header.arm9_load_data.offset,
@@ -227,7 +241,13 @@ fn extract_all_parts(rom_file: &fs::File, header: &ndsz_nds::Header, path: &Path
 }
 
 /// Extracts a part given it's offset and size from the game file
-fn extract_part(rom_file: &fs::File, offset: u32, size: u32, name: &str, path: &Path) -> Result<(), anyhow::Error> {
+fn extract_part<R: io::Read + io::Seek>(
+	rom_file: &mut R,
+	offset: u32,
+	size: u32,
+	name: &str,
+	path: &Path,
+) -> Result<(), anyhow::Error> {
 	let mut file_path = path.join(name);
 	file_path.set_extension("bin");
 	println!("{}", file_path.display());
