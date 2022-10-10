@@ -12,9 +12,6 @@ use ndsz_util::AsciiStrArr;
 /// Directory
 #[derive(PartialEq, Eq, Clone, Debug)]
 pub struct Dir {
-	/// Id
-	pub id: u16,
-
 	/// Entries
 	pub entries: Vec<DirEntry>,
 }

@@ -128,6 +128,6 @@ impl MainTableEntry {
 			})
 			.try_collect::<_, Vec<_>, _>()?;
 
-		Ok(Dir { id, entries })
+		Ok(Dir { entries })
 	}
 }
