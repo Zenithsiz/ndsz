@@ -3,17 +3,18 @@
 // Imports
 use {
 	anyhow::Context,
-	ndsz_fat::{dir, Dir, FileAllocationTable},
+	ndsz_fat::{dir, Dir, FileAllocationTable, FileNameTable},
 	ndsz_util::{AsciiStrArr, IoSlice},
 	std::{
+		collections::HashSet,
 		fs,
 		io,
 		path::{Path, PathBuf},
 	},
 };
 
-/// Directory visitor
-struct DirVisitor<'fat, 'reader, R> {
+/// Fnt extraction visitor
+struct ExtractorVisitor<'fat, 'reader, R> {
 	/// Current path
 	cur_path: PathBuf,
 
@@ -27,11 +28,11 @@ struct DirVisitor<'fat, 'reader, R> {
 	fat: &'fat FileAllocationTable,
 }
 
-impl<'fat, 'reader, R: io::Read + io::Seek> dir::Visitor for DirVisitor<'fat, 'reader, R> {
+impl<'fat, 'reader, R: io::Read + io::Seek> dir::Visitor for ExtractorVisitor<'fat, 'reader, R> {
 	type Error = anyhow::Error;
-	type SubDirVisitor<'visitor, 'entry> = DirVisitor<'fat, 'visitor, R>
-	    where
-		    Self: 'visitor;
+	type SubDirVisitor<'visitor, 'entry> = ExtractorVisitor<'fat, 'visitor, R>
+	where
+		Self: 'visitor;
 
 	fn visit_file(&mut self, name: &AsciiStrArr<0x80>, id: u16) -> Result<(), Self::Error> {
 		let path = self.cur_path.join(name.as_str());
@@ -63,10 +64,43 @@ impl<'fat, 'reader, R: io::Read + io::Seek> dir::Visitor for DirVisitor<'fat, 'r
 		// Create the directory
 		fs::create_dir_all(&path).context("Unable to create directory")?;
 
-		Ok(DirVisitor {
+		Ok(ExtractorVisitor {
 			cur_path: path,
 			reader:   self.reader,
 			fat:      self.fat,
+		})
+	}
+}
+
+/// Visitor that collects all files
+struct CollectFilesVisitor<'fat, 'files> {
+	/// The fat
+	fat: &'fat FileAllocationTable,
+
+	/// All file ids visited
+	files_visited: &'files mut HashSet<u16>,
+}
+
+impl<'fat, 'files> dir::Visitor for CollectFilesVisitor<'fat, 'files> {
+	type Error = !;
+	type SubDirVisitor<'visitor, 'entry> = CollectFilesVisitor<'fat, 'visitor>
+	where
+		Self: 'visitor;
+
+	fn visit_file(&mut self, _name: &AsciiStrArr<0x80>, id: u16) -> Result<(), Self::Error> {
+		self.files_visited.insert(id);
+
+		Ok(())
+	}
+
+	fn visit_dir<'visitor, 'entry>(
+		&'visitor mut self,
+		_name: &'entry AsciiStrArr<0x80>,
+		_id: u16,
+	) -> Result<Self::SubDirVisitor<'visitor, 'entry>, Self::Error> {
+		Ok(CollectFilesVisitor {
+			fat:           self.fat,
+			files_visited: self.files_visited,
 		})
 	}
 }
@@ -78,7 +112,7 @@ pub fn extract_fat_dir<R: io::Read + io::Seek>(
 	fat: &FileAllocationTable,
 	path: PathBuf,
 ) -> Result<(), anyhow::Error> {
-	let mut visitor = DirVisitor {
+	let mut visitor = ExtractorVisitor {
 		fat,
 		reader,
 		cur_path: path,
@@ -86,15 +120,31 @@ pub fn extract_fat_dir<R: io::Read + io::Seek>(
 	dir.walk(&mut visitor).context("Unable to extract root directory")
 }
 
-/// Extracts the fat without the fnt
-pub fn extract_fat_raw<R: io::Read + io::Seek>(
+/// Extracts the hidden fat files not mentioned in the fnt
+pub fn extract_fat_hidden<R: io::Read + io::Seek>(
 	fat: &FileAllocationTable,
+	fnt: &FileNameTable,
 	rom_file: &mut R,
 	output_path: &Path,
-) -> Result<(), anyhow::Error> {
+) -> Result<Vec<u16>, anyhow::Error> {
+	let mut fnt_files = HashSet::new();
+	fnt.root
+		.walk(&mut CollectFilesVisitor {
+			fat,
+			files_visited: &mut fnt_files,
+		})
+		.into_ok();
+
+	let mut extracted = vec![];
 	let fat_dir = output_path.join("fat");
 	fs::create_dir_all(&fat_dir).context("Unable to create fat output directory")?;
-	for (idx, ptr) in fat.ptrs.iter().enumerate() {
+	for (ptr, idx) in fat.ptrs.iter().zip(0..) {
+		// If this file isn't hidden, continue
+		if fnt_files.contains(&idx) {
+			continue;
+		}
+		extracted.push(idx);
+
 		let name = format!("{idx}.bin");
 		self::extract_part(
 			rom_file,
@@ -106,7 +156,7 @@ pub fn extract_fat_raw<R: io::Read + io::Seek>(
 		.with_context(|| format!("Unable to extract fat entry #{idx} ({ptr:?})"))?;
 	}
 
-	Ok(())
+	Ok(extracted)
 }
 
 /// Extract all parts of the nds header, except the filesystem

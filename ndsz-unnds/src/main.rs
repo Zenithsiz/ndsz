@@ -1,21 +1,18 @@
 //! Unpacks a `.nds`
 
 // Features
-#![feature(fs_try_exists)]
+#![feature(fs_try_exists, never_type, unwrap_infallible)]
 
 // Modules
 mod args;
-mod debug_fat;
-mod debug_fnt;
 mod extract;
 
 // Imports
 use {
 	self::{
 		args::Args,
-		debug_fat::output_fat_yaml,
-		debug_fnt::output_fnt_yaml,
-		extract::{extract_all_parts, extract_fat_dir, extract_fat_raw},
+		extract::{extract_all_parts, extract_fat_dir, extract_fat_hidden},
+		yaml::output_yaml,
 	},
 	anyhow::Context,
 	clap::Parser,
@@ -45,33 +42,17 @@ fn main() -> Result<(), anyhow::Error> {
 	let mut input_file = fs::File::open(&args.input_path).context("Unable to open input file")?;
 
 	// Read the header
-	let header = parse_header(&mut input_file)?;
+	let header = self::parse_header(&mut input_file)?;
 	tracing::trace!(?header);
 
-	// Get the fat, then output it, and it's files, if requested
+	// Parses the fat and fnt
 	let fat = self::parse_fat(&mut input_file, &header)?;
-
-	if args.fat {
-		let fat_path = output_path.join("fat.yaml");
-		self::output_fat_yaml(&fat, fat_path).context("Unable to output fat yaml")?;
-	}
-
-	if args.fat_files {
-		self::extract_fat_raw(&fat, &mut input_file, &output_path)?;
-	}
-
-	// Get the fnt, then output it, if requested
 	let fnt = self::parse_fnt(&mut input_file, &header)?;
 
-	if args.fnt {
-		let fnt_path = output_path.join("fnt.yaml");
-		self::output_fnt_yaml(&fnt, fnt_path).context("Unable to output fnt yaml")?;
-	}
-
-	// Then extract all parts, and the directory structure
+	// Then extract all parts, as well as files not mentioned in the fnt
 	fs::create_dir_all(&output_path).context("Unable to create output directory")?;
-
 	self::extract_all_parts(&mut input_file, &header, &output_path).context("Unable to extract parts")?;
+	let hidden_fat_files = self::extract_fat_hidden(&fat, &fnt, &mut input_file, &output_path)?;
 
 	let fs_dir = output_path.join("fs");
 	self::extract_fat_dir(&fnt.root, &mut input_file, &fat, fs_dir).context("Unable to extract fat")?;
