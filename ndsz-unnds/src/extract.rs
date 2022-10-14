@@ -116,6 +116,10 @@ pub fn extract_all_parts<R: io::Read + io::Seek>(
 	path: &Path,
 ) -> Result<(), anyhow::Error> {
 	let parts = [
+		(0x15, 0x7, "reserved1"),
+		(0x88, 0x38, "reserved2"),
+		(0x160, 0x20, "reserved_debugger"),
+		(0xc0, 0x9c, "nintendo_logo"),
 		(
 			header.arm9_load_data.offset,
 			header.arm9_load_data.size,
